@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador: De Dato a Base de Datos</title>
+    <style>
+        :root { --primary: #2563eb; --success: #16a34a; --warning: #ca8a04; --dark: #1e293b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; padding: 20px; color: var(--dark); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1100px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        h1, h2 { margin-top: 0; color: var(--dark); }
+        h1 { grid-column: 1 / -1; text-align: center; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
+        
+        /* Formulario */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 90%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+
+        /* Pantallas de proceso */
+        .process-box { min-height: 80px; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px dashed #cbd5e1; }
+        .data-pills .pill { display: inline-block; background: #e2e8f0; padding: 4px 10px; border-radius: 15px; margin: 4px; font-size: 0.85em; font-weight: bold; }
+        .info-msg { background: #dcfce7; color: #166534; padding: 10px; border-radius: 6px; border-left: 4px solid var(--success); font-style: italic; }
+        
+        /* Tabla */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+        th { background: var(--dark); color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        .empty-db { text-align: center; color: #94a3b8; padding: 20px; }
+
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<h1>Simulador de Ciclo de Datos</h1>
+
+<div class="grid">
+    <!-- COLUMNA 1: INGRESO -->
+    <div class="card">
+        <h2>1. Entrada de Datos</h2>
+        <div class="form-group">
+            <label>Autor/Editorial:</label>
+            <input type="text" id="autor" value="GILDEMEISTER">
+        </div>
+        <div class="form-group">
+            <label>Cliente:</label>
+            <input type="text" id="cliente" value="JULCA RAMOS">
+        </div>
+        <div class="form-group">
+            <label>Fecha:</label>
+            <input type="date" id="fecha" value="2026-04-15">
+        </div>
+        <div class="form-group">
+            <label>Precio (S/.):</label>
+            <input type="number" id="precio" value="25.50" step="0.01">
+        </div>
+        <div class="form-group">
+            <label>Título del Libro:</label>
+            <input type="text" id="titulo" value="PIEZAS SUELTAS">
+        </div>
+        <button onclick="procesar()">Procesar e Insertar</button>
+    </div>
+
+    <!-- COLUMNA 2: TRANSFORMACIÓN -->
+    <div class="card">
+        <h2>2. Transformación en Vivo</h2>
+        
+        <label>Piezas de Datos sueltas:</label>
+        <div id="box-datos" class="process-box data-pills">
+            <span class="pill">Esperando datos...</span>
+        </div>
+
+        <label>Información Generada (Con significado):</label>
+        <div id="box-info" class="process-box">
+            <p style="color:#94a3b8">Completa el formulario para ver el mensaje.</p>
+        </div>
+
+        <label>Base de Datos (Almacén Final):</label>
+        <div class="card" style="padding:0; box-shadow: none; border: 1px solid #e2e8f0;">
+            <table id="db-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Libro</th>
+                        <th>Cliente</th>
+                        <th>Precio</th>
+                    </tr>
+                </thead>
+                <tbody id="db-body">
+                    <tr><td colspan="4" class="empty-db">Base de datos vacía</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let idCounter = 100;
+
+    function procesar() {
+        // Obtener valores (Datos)
+        const autor = document.getElementById('autor').value;
+        const cliente = document.getElementById('cliente').value;
+        const fecha = document.getElementById('fecha').value;
+        const precio = document.getElementById('precio').value;
+        const titulo = document.getElementById('titulo').value;
+
+        if(!autor || !cliente || !titulo) { alert("Por favor, llena todos los campos"); return; }
+
+        // 1. Mostrar Datos Sueltos
+        const boxDatos = document.getElementById('box-datos');
+        boxDatos.innerHTML = `
+            <span class="pill">${autor}</span>
+            <span class="pill">${cliente}</span>
+            <span class="pill">${fecha}</span>
+            <span class="pill">S/. ${precio}</span>
+            <span class="pill">${titulo}</span>
+        `;
+
+        // 2. Mostrar Información (Metadatos aplicados)
+        const boxInfo = document.getElementById('box-info');
+        boxInfo.innerHTML = `
+            <div class="info-msg">
+                <strong>NOTIFICACIÓN:</strong> El cliente <b>${cliente}</b> ha adquirido el recurso tipo LIBRO titulado 
+                "<b>${titulo}</b>" de <b>${autor}</b> por un monto de <b>S/. ${precio}</b> con fecha <b>${fecha}</b>.
+            </div>
+        `;
+
+        // 3. Insertar en la "Base de Datos" (Tabla)
+        const dbBody = document.getElementById('db-body');
+        if(idCounter === 100) dbBody.innerHTML = ""; // Limpiar mensaje de vacío
+
+        idCounter++;
+        const newRow = `
+            <tr>
+                <td>#${idCounter}</td>
+                <td>${titulo}</td>
+                <td>${cliente}</td>
+                <td>S/. ${parseFloat(precio).toFixed(2)}</td>
+            </tr>
+        `;
+        dbBody.innerHTML += newRow;
+    }
+</script>
+
+</body>
+</html>
